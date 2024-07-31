@@ -1,0 +1,33 @@
+services:
+  backend:
+    restart: always
+    build:
+      context: backend
+      target: development
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongo
+    networks:
+      - express-mongo
+      - backend-express
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/Opiniion
+    ports:
+      - 3000:3000
+  mongo:
+    restart: always
+    image: mongo:4.2.0
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - express-mongo
+    expose:
+      - 27017
+networks:
+  backend-express:
+  express-mongo:
+
+volumes:
+  mongo_data:
