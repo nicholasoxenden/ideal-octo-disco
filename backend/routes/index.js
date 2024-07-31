@@ -42,6 +42,8 @@ router.post("/opiniionTest", async (req, res) => {
   try {
     const { locationId, startDate, endDate } = req.body;
 
+    // probably don't need as many fields, and may want to return object instead of array
+    // if we needed further lookup based on customerId, we could have a separate or modified aggregation for that
     const result = await Customer.aggregate([
       { $match: { locationId } },
       {
@@ -52,6 +54,7 @@ router.post("/opiniionTest", async (req, res) => {
           as: "logs",
         },
       },
+      { $unwind: "$logs" },
       {
         $match: {
           "logs.date": { $gte: new Date(startDate), $lte: new Date(endDate) },
@@ -60,6 +63,7 @@ router.post("/opiniionTest", async (req, res) => {
       {
         $group: {
           _id: "$customerId",
+          locationId: { $first: "$locationId" },
           firstName: { $first: "$firstName" },
           lastName: { $first: "$lastName" },
           email: { $first: "$email" },
@@ -71,6 +75,7 @@ router.post("/opiniionTest", async (req, res) => {
         $project: {
           _id: 0,
           customerId: "$_id",
+          locationId: 1,
           firstName: 1,
           lastName: 1,
           email: 1,
